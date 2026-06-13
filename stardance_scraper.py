@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 BASE = "https://stardance.hackclub.com/projects/{}"
 OUTPUT_FILE = "stardance_projects.csv"
 
-END_ID = 20000
+END_ID = 100_000
 DELAY = 0.1
 
 def get_resume_id():
@@ -32,15 +32,12 @@ START_ID = get_resume_id()
 def get_project(pid):
   url = BASE.format(pid)
 
-  try:
-    response = requests.get(url, timeout=8, headers={
-      "User-Agent": "Stardance leaderboard experiment by @The_Craw"
-    })
-  except requests.RequestException:
-    return None
+  try: response = requests.get(url, timeout=8, headers={"User-Agent": "Stardance leaderboard experiment by @The_Craw"})
+  except requests.RequestException: return "ERROR"
 
-  if response.status_code != 200:
-    return None
+  if response.status_code == 404: return "404"
+
+  if response.status_code != 200: return "ERROR"
 
   soup = BeautifulSoup(response.text, "html.parser")
   text = soup.get_text("\n", strip=True)
@@ -101,19 +98,41 @@ def main():
 
     start = time.time()
 
-    for pid in range(START_ID, END_ID + 1):
-      data = get_project(pid)
+    MAX_CONSECUTIVE_404S = 20
 
-      if data:
-        writer.writerow(data)
+    consecutive_404s = 0
+
+    for pid in range(START_ID, END_ID + 1):
+      result = get_project(pid)
+
+      if result == "404":
+        consecutive_404s += 1
+
+        print(
+         f"[{pid}] 404 "
+          f"({consecutive_404s}/{MAX_CONSECUTIVE_404S})"
+        )
+
+        if consecutive_404s >= MAX_CONSECUTIVE_404S:
+          print(
+            f"Stopping after "
+            f"{MAX_CONSECUTIVE_404S} consecutive 404s."
+          )
+          break
+
+      elif result == "ERROR":  print(f"[{pid}] Request error")
+
+      else:
+        consecutive_404s = 0
+
+        writer.writerow(result)
         file.flush()
 
         print(
-          f"[{pid}] {data['title']} | "
-          f"{data['hours']} hours | "
-          f"{data['followers']} followers"
+          f"[{pid}] {result['title']} | "
+          f"{result['hours']} hours | "
+          f"{result['followers']} followers"
         )
-      else: print(f"[{pid}] No project")
 
       time.sleep(DELAY)
 
