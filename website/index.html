@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Stardance Leaderboard</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #111;
+      color: white;
+      padding: 2rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    th, td {
+      padding: 0.6rem;
+      border-bottom: 1px solid #333;
+      text-align: left;
+    }
+
+    a {
+      color: #9cf;
+    }
+  </style>
+</head>
+<body>
+  <h1>Stardance Project Leaderboard</h1>
+
+  <button onclick="sortBy('hours')">Total Hours</button>
+  <button onclick="sortBy('followers')">Followers</button>
+  <button onclick="sortBy('devlogs')">Devlogs</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Project</th>
+        <th>Author</th>
+        <th>Hours</th>
+        <th>Followers</th>
+        <th>Devlogs</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script>
+    let projects = [];
+
+    Papa.parse("projects.csv", {
+      download: true,
+      header: true,
+      dynamicTyping: true,
+      complete: results => {
+        projects = results.data.filter(p => p.title);
+        sortBy("hours");
+      }
+    });
+
+    function sortBy(key) {
+      const rows = document.getElementById("rows");
+
+      const sorted = [...projects]
+        .sort((a, b) => (b[key] || 0) - (a[key] || 0))
+        .slice(0, 100);
+
+      rows.innerHTML = sorted.map((p, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td><a href="${p.url}" target="_blank">${p.title}</a></td>
+          <td>${p.author || ""}</td>
+          <td>${p.hours || 0}</td>
+          <td>${p.followers || 0}</td>
+          <td>${p.devlogs || 0}</td>
+        </tr>
+      `).join("");
+    }
+  </script>
+</body>
+</html>
