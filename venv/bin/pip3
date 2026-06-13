@@ -1,4 +1,4 @@
-#!/home/craw/craw_files/myenv/web_stuff/venv/bin/python3
+#!/home/craw/craw_files/myenv/stardance/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

@@ -2,84 +2,368 @@
 <html>
 <head>
   <title>Stardance Leaderboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      margin: 0;
       font-family: system-ui, sans-serif;
-      background: #111;
+      background:
+        radial-gradient(circle at top left, #4934a8 0, transparent 32rem),
+        radial-gradient(circle at top right, #8d2f6f 0, transparent 28rem),
+        #0d0d14;
       color: white;
+      min-height: 100vh;
       padding: 2rem;
+    }
+
+    .page {
+      width: min(1200px, 100%);
+      margin: 0 auto;
+    }
+
+    .hero {
+      margin-bottom: 2rem;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 4rem);
+      line-height: 1;
+      letter-spacing: -0.06em;
+    }
+
+    .hero p {
+      color: #c8c5dd;
+      font-size: 1.05rem;
+      max-width: 44rem;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 1.25rem;
+      padding: 1rem;
+      backdrop-filter: blur(18px);
+      box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.35);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 1rem;
+      padding: 1rem;
+    }
+
+    .stat .label {
+      color: #b9b5d0;
+      font-size: 0.9rem;
+    }
+
+    .stat .value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-top: 0.2rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      margin-bottom: 1rem;
+    }
+
+    button,
+    input {
+      border: 0;
+      border-radius: 999px;
+      padding: 0.7rem 1rem;
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.12);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    button.active {
+      background: white;
+      color: #111;
+    }
+
+    input {
+      flex: 1;
+      min-width: 14rem;
+      background: rgba(255, 255, 255, 0.92);
+      color: #111;
+      outline: none;
+    }
+
+    #status {
+      color: #bab6cf;
+      margin: 0 0 1rem;
+      font-size: 0.95rem;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 1rem;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 1rem;
+      min-width: 720px;
+    }
+
+    th {
+      color: #c8c5dd;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(255, 255, 255, 0.06);
     }
 
     th, td {
-      padding: 0.6rem;
-      border-bottom: 1px solid #333;
+      padding: 0.85rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       text-align: left;
     }
 
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
     a {
-      color: #9cf;
+      color: white;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .rank {
+      width: 4rem;
+      font-weight: 900;
+      color: #d8d4ff;
+    }
+
+    .medal {
+      font-size: 1.15rem;
+    }
+
+    .muted {
+      color: #b9b5d0;
+    }
+
+    .number {
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+
+    @media (max-width: 700px) {
+      body {
+        padding: 1rem;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        padding: 0.8rem;
+      }
     }
   </style>
 </head>
+
 <body>
-  <h1>Stardance Project Leaderboard</h1>
+  <main class="page">
+    <section class="hero">
+      <h1>Stardance Leaderboard</h1>
+      <p>
+        A community leaderboard for Stardance projects, sorted by hours,
+        followers, and devlogs.
+      </p>
+    </section>
 
-  <button onclick="sortBy('hours')">Total Hours</button>
-  <button onclick="sortBy('followers')">Followers</button>
-  <button onclick="sortBy('devlogs')">Devlogs</button>
+    <section class="stats">
+      <div class="stat">
+        <div class="label">Projects tracked</div>
+        <div class="value" id="projectCount">-</div>
+      </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Project</th>
-        <th>Author</th>
-        <th>Hours</th>
-        <th>Followers</th>
-        <th>Devlogs</th>
-      </tr>
-    </thead>
-    <tbody id="rows"></tbody>
-  </table>
+      <div class="stat">
+        <div class="label">Total logged hours</div>
+        <div class="value" id="totalHours">-</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Total followers</div>
+        <div class="value" id="totalFollowers">-</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="controls">
+        <button id="sort-hours" onclick="sortBy('hours')">Total Hours</button>
+        <button id="sort-followers" onclick="sortBy('followers')">Followers</button>
+        <button id="sort-devlogs" onclick="sortBy('devlogs')">Devlogs</button>
+        <button onclick="loadData()">Refresh data</button>
+        <input id="search" placeholder="Search projects or authors..." oninput="renderTable()">
+      </div>
+
+      <p id="status">Loading...</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Project</th>
+              <th>Author</th>
+              <th>Hours</th>
+              <th>Followers</th>
+              <th>Devlogs</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
   <script>
     let projects = [];
+    let currentSort = "hours";
 
-    Papa.parse("projects.csv", {
-      download: true,
-      header: true,
-      dynamicTyping: true,
-      complete: results => {
-        projects = results.data.filter(p => p.title);
-        sortBy("hours");
-      }
-    });
+    function loadData() {
+      const status = document.getElementById("status");
+      status.textContent = "Refreshing data...";
+
+      Papa.parse("projects.csv?t=" + Date.now(), {
+        download: true,
+        header: true,
+        dynamicTyping: true,
+        complete: results => {
+          projects = results.data.filter(p => p.title);
+
+          updateStats();
+          sortBy(currentSort);
+
+          status.textContent =
+            "Last refreshed: " + new Date().toLocaleString();
+        },
+        error: error => {
+          status.textContent = "Could not load projects.csv";
+          console.error(error);
+        }
+      });
+    }
+
+    function updateStats() {
+      const totalHours = projects.reduce((sum, p) => sum + (p.hours || 0), 0);
+      const totalFollowers = projects.reduce((sum, p) => sum + (p.followers || 0), 0);
+
+      document.getElementById("projectCount").textContent =
+        projects.length.toLocaleString();
+
+      document.getElementById("totalHours").textContent =
+        totalHours.toLocaleString();
+
+      document.getElementById("totalFollowers").textContent =
+        totalFollowers.toLocaleString();
+    }
 
     function sortBy(key) {
-      const rows = document.getElementById("rows");
+      currentSort = key;
 
-      const sorted = [...projects]
-        .sort((a, b) => (b[key] || 0) - (a[key] || 0))
+      document.querySelectorAll("button").forEach(button => {
+        button.classList.remove("active");
+      });
+
+      const activeButton = document.getElementById("sort-" + key);
+      if (activeButton) activeButton.classList.add("active");
+
+      renderTable();
+    }
+
+    function getMedal(rank) {
+      if (rank === 1) return "🥇";
+      if (rank === 2) return "🥈";
+      if (rank === 3) return "🥉";
+      return rank;
+    }
+
+    function escapeHtml(text) {
+      return String(text || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderTable() {
+      const rows = document.getElementById("rows");
+      const query = document.getElementById("search").value.toLowerCase().trim();
+
+      const filtered = projects.filter(p => {
+        const title = String(p.title || "").toLowerCase();
+        const author = String(p.author || "").toLowerCase();
+
+        return title.includes(query) || author.includes(query);
+      });
+
+      const sorted = [...filtered]
+        .sort((a, b) => (b[currentSort] || 0) - (a[currentSort] || 0))
         .slice(0, 100);
 
-      rows.innerHTML = sorted.map((p, i) => `
-        <tr>
-          <td>${i + 1}</td>
-          <td><a href="${p.url}" target="_blank">${p.title}</a></td>
-          <td>${p.author || ""}</td>
-          <td>${p.hours || 0}</td>
-          <td>${p.followers || 0}</td>
-          <td>${p.devlogs || 0}</td>
-        </tr>
-      `).join("");
+      rows.innerHTML = sorted.map((p, i) => {
+        const rank = i + 1;
+
+        return `
+          <tr>
+            <td class="rank medal">${getMedal(rank)}</td>
+            <td>
+              <a href="${escapeHtml(p.url)}" target="_blank">
+                ${escapeHtml(p.title)}
+              </a>
+            </td>
+            <td class="muted">${escapeHtml(p.author || "")}</td>
+            <td class="number">${(p.hours || 0).toLocaleString()}</td>
+            <td class="number">${(p.followers || 0).toLocaleString()}</td>
+            <td class="number">${(p.devlogs || 0).toLocaleString()}</td>
+          </tr>
+        `;
+      }).join("");
     }
+
+    loadData();
+    setInterval(loadData, 5 * 60 * 1000);
   </script>
 </body>
 </html>

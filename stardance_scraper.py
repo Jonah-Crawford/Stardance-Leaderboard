@@ -1,3 +1,4 @@
+import os
 import re
 import csv
 import time
@@ -8,9 +9,25 @@ from bs4 import BeautifulSoup
 BASE = "https://stardance.hackclub.com/projects/{}"
 OUTPUT_FILE = "stardance_projects.csv"
 
-START_ID = 1
 END_ID = 20000
 DELAY = 0.1
+
+def get_resume_id():
+  if not os.path.exists(OUTPUT_FILE): return 1
+
+  last_id = 1
+
+  with open(OUTPUT_FILE, "r", encoding="utf-8") as file:
+    for line in file:
+      if line.startswith("id,"): continue
+
+      parts = line.split(",", 1)
+
+      if parts[0].isdigit(): last_id = int(parts[0]) + 1
+
+  return last_id
+
+START_ID = get_resume_id()
 
 def get_project(pid):
   url = BASE.format(pid)
@@ -65,7 +82,9 @@ def get_project(pid):
   }
 
 def main():
-  with open(OUTPUT_FILE, "w", newline="", encoding="utf-8") as file:
+  write_header = not os.path.exists(OUTPUT_FILE) or os.path.getsize(OUTPUT_FILE) == 0
+
+  with open(OUTPUT_FILE, "a", newline="", encoding="utf-8") as file:
     writer = csv.DictWriter(file, fieldnames=[
       "id",
       "title",
@@ -76,8 +95,9 @@ def main():
       "url"
     ])
 
-    writer.writeheader()
-    file.flush()
+    if write_header:
+      writer.writeheader()
+      file.flush()
 
     start = time.time()
 
@@ -93,8 +113,7 @@ def main():
           f"{data['hours']} hours | "
           f"{data['followers']} followers"
         )
-      else:
-        print(f"[{pid}] No project")
+      else: print(f"[{pid}] No project")
 
       time.sleep(DELAY)
 
