@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Stardance Leaderboard</title>
+  <meta charset="UTF-8">
+  <title>Craw's Stardance Leaderboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
@@ -19,6 +20,24 @@
       color: white;
       min-height: 100vh;
       padding: 2rem;
+    }
+
+    .hero-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .hero {
+      flex: 1;
+    }
+
+    .sidebar__logo-img {
+      width: 300px;
+      height: auto;
+      flex-shrink: 0;
     }
 
     .page {
@@ -200,13 +219,20 @@
 
 <body>
   <main class="page">
-    <section class="hero">
-      <h1>Stardance Leaderboard</h1>
-      <p>
-        A community leaderboard for Stardance projects, sorted by hours,
-        followers, and devlogs.
-      </p>
-    </section>
+    <div class="hero-container">
+      <section class="hero">
+        <h1>Craw's Stardance Leaderboard</h1>
+        <p>
+          A community leaderboard for Stardance projects, sorted by hours,
+          followers, and devlogs.
+        </p>
+      </section>
+
+      <img
+        alt="Hack Club Stardance Challenge"
+        class="sidebar__logo-img"
+        src="https://stardance.hackclub.com/assets/landing/header/stardance-logo-df399a7f.png">
+    </div>
 
     <section class="stats">
       <div class="stat">
