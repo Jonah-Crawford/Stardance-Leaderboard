@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-cp ../stardance_projects.csv projects.csv.tmp
+cp ../top.csv projects.csv.tmp
 mv projects.csv.tmp projects.csv
 
 echo "Updated Stardance Leaderboard"

@@ -224,8 +224,11 @@
         <h1>Craw's Stardance Leaderboard</h1>
         <p>
           A community leaderboard for Stardance projects, sorted by hours,
-          followers, and devlogs.
+          followers, and devlogs. Updates every week.
+
+          Follow <a href="https://stardance.hackclub.com/projects/8100">Crawssembly!</a>
         </p>
+
       </section>
 
       <img
@@ -357,35 +360,36 @@
       const rows = document.getElementById("rows");
       const query = document.getElementById("search").value.toLowerCase().trim();
 
-      const filtered = projects.filter(p => {
+      const rankedProjects = [...projects]
+        .sort((a, b) => (b[currentSort] || 0) - (a[currentSort] || 0))
+        .map((project, index) => ({
+          ...project,
+          rank: index + 1
+        }));
+
+      const filtered = rankedProjects.filter(p => {
         const title = String(p.title || "").toLowerCase();
         const author = String(p.author || "").toLowerCase();
 
         return title.includes(query) || author.includes(query);
       });
 
-      const sorted = [...filtered]
-        .sort((a, b) => (b[currentSort] || 0) - (a[currentSort] || 0))
-        .slice(0, 100);
+      const visible = filtered.slice(0, 100);
 
-      rows.innerHTML = sorted.map((p, i) => {
-        const rank = i + 1;
-
-        return `
-          <tr>
-            <td class="rank medal">${getMedal(rank)}</td>
-            <td>
-              <a href="${escapeHtml(p.url)}" target="_blank">
-                ${escapeHtml(p.title)}
-              </a>
-            </td>
-            <td class="muted">${escapeHtml(p.author || "")}</td>
-            <td class="number">${(p.hours || 0).toLocaleString()}</td>
-            <td class="number">${(p.followers || 0).toLocaleString()}</td>
-            <td class="number">${(p.devlogs || 0).toLocaleString()}</td>
-          </tr>
-        `;
-      }).join("");
+      rows.innerHTML = visible.map(p => `
+        <tr>
+          <td class="rank medal">${getMedal(p.rank)}</td>
+          <td>
+            <a href="${escapeHtml(p.url)}" target="_blank">
+              ${escapeHtml(p.title)}
+            </a>
+          </td>
+          <td class="muted">${escapeHtml(p.author || "")}</td>
+          <td class="number">${(p.hours || 0).toLocaleString()}</td>
+          <td class="number">${(p.followers || 0).toLocaleString()}</td>
+          <td class="number">${(p.devlogs || 0).toLocaleString()}</td>
+        </tr>
+      `).join("");
     }
 
     loadData();
